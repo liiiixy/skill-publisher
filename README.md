@@ -1,20 +1,22 @@
-# Skill Generator & Publisher — Claude Code Skill 生成器与发布器
+# Skill Builder & Publisher — Claude Code Skill 构建与发布工具
 
-一个 **Claude Code Skill**，具备两大核心能力：
+两个独立的 **Claude Code Skill**，可单独使用也可串联：
 
-1. **🧠 Skill 生成器**：用户在多轮对话中完成任务后，自动回溯对话、提炼流程、生成可复用的 Skill 文件
-2. **📦 Skill 发布器**：安全检查、打包、一键推送到 GitHub
+1. **🧠 Skill Builder**（`/skill_builder`）：从对话中提炼流程、生成 Skill 文件、打包项目
+2. **🚀 Skill Publisher**（`/skill_publisher`）：安全检查、推送到 GitHub
 
 ## ✨ 核心场景
 
 ```
-用户和 Claude 完成了某个任务（比如数据分析、网页爬取、邮件处理...）
+你和 Claude 完成了某个任务（数据分析、网页爬取、邮件处理...）
 ↓
-用户输入 /publish 或说 "把这个能力打包成 skill"
+输入 /skill_builder
 ↓
-Claude 自动：分析对话 → 提炼流程 → 生成 Skill .md 文件 → 安全检查 → 推送 GitHub
+Claude 自动：分析对话 → 提炼流程 → 生成 Skill .md → 打包（README + install.sh）
 ↓
-其他人 git clone + ./install.sh 就能复用这个能力
+你确认后，输入 /skill_publisher
+↓
+安全检查 → 推送 GitHub → 其他人 git clone 就能复用
 ```
 
 ## 📦 安装
@@ -33,48 +35,57 @@ cd skill-publisher
 git clone https://github.com/liiiixy/skill-publisher.git
 
 # 复制 Skill 文件
-mkdir -p /path/to/your/project/.claude/skills
-cp skill-publisher/.claude/skills/skill-publisher.md /path/to/your/project/.claude/skills/
+mkdir -p /path/to/project/.claude/skills
+cp skill-publisher/.claude/skills/*.md /path/to/project/.claude/skills/
 
-# 复制斜杠命令（可选，启用 /publish 快捷键）
-mkdir -p /path/to/your/project/.claude/commands
-cp skill-publisher/.claude/commands/publish.md /path/to/your/project/.claude/commands/
+# 复制斜杠命令
+mkdir -p /path/to/project/.claude/commands
+cp skill-publisher/.claude/commands/*.md /path/to/project/.claude/commands/
 ```
 
 ## 🚀 使用
 
-在 Claude Code 中：
-
-| 方式 | 说明 |
+| 命令 | 说明 |
 |------|------|
-| `/publish` | 斜杠命令快捷触发 |
-| `"把这个打包成 skill"` | 从当前对话生成新 Skill |
-| `"发布 skill"` / `"push to GitHub"` | 打包并推送到 GitHub |
+| `/skill_builder` | 从当前对话生成 Skill + 打包项目 |
+| `/skill_publisher` | 将已打包的 Skill 发布到 GitHub |
+| `"把这个打包成 skill"` | 自然语言触发构建 |
+| `"发布到 GitHub"` | 自然语言触发发布 |
 | `"检查敏感信息"` | 仅安全扫描 |
-| `"帮我写个 README"` | 仅生成文档 |
 
-## 🧠 Skill 生成器（G1-G6）
+### 典型流程
 
-| 步骤 | 说明 |
-|------|------|
-| G1. 分析对话 | 回溯对话历史，提炼任务流程、工具、交互点 |
-| G2. 设计架构 | 根据复杂度决定单 skill 还是多 skill |
-| G3. 生成文件 | 按标准模板生成 `.claude/skills/*.md` |
-| G4. 处理代码 | 通用化配套 Python 脚本，生成 requirements.txt |
-| G5. 用户审核 | 展示完整内容，用户确认或修改 |
-| G6. 验证 | 确认文件可用，给出测试建议 |
+```
+# 1. 完成某个任务后...
+/skill_builder          ← 生成 Skill + 打包
 
-## 📦 Skill 发布器（P1-P7）
+# 2. 确认无误后...
+/skill_publisher        ← 推送到 GitHub
+```
+
+## 🧠 Skill Builder 流程（9 步）
 
 | 步骤 | 说明 |
 |------|------|
-| P1. 扫描项目 | 自动识别需要打包的文件，排除敏感/临时文件 |
-| P2. 安全检查 | 扫描密码、API Key、硬编码邮箱、绝对路径等 |
-| P3. 生成 README | 自动生成包含安装方法、使用说明的 README |
-| P4. 生成 install.sh | 创建一键安装脚本 |
-| P5. 生成 .gitignore | 确保敏感文件不被提交 |
-| P6. 推送 GitHub | 支持 GitHub CLI / MCP / 手动 git |
-| P7. 验证 | 确认推送成功，给出分享链接 |
+| 1. 分析对话 | 回溯历史，提炼任务流程、工具、交互点 |
+| 2. 设计架构 | 根据复杂度决定单 skill 还是多 skill |
+| 3. 生成 Skill 文件 | 按标准模板生成 `.claude/skills/*.md` |
+| 4. 处理配套代码 | 通用化 Python 脚本，生成 requirements.txt |
+| 5. 用户审核 | 展示完整内容，用户确认或修改 |
+| 6. 安全检查 | 扫描密码、API Key、硬编码邮箱、绝对路径 |
+| 7. 生成项目文件 | README.md、install.sh、.gitignore |
+| 8. 生成斜杠命令 | 创建 `/xxx` 快捷触发命令 |
+| 9. 构建完成 | 给出测试建议，询问是否发布 |
+
+## 🚀 Skill Publisher 流程（5 步）
+
+| 步骤 | 说明 |
+|------|------|
+| 1. 检查就绪 | 确认 Skill 文件和 README 存在 |
+| 2. 安全检查 | 强制扫描敏感信息 |
+| 3. 确认信息 | 展示仓库名、文件数，等待用户确认 |
+| 4. 推送 GitHub | 支持 GitHub CLI / MCP / 手动 git |
+| 5. 验证 | 确认推送成功，给出分享链接 |
 
 ## 📁 项目结构
 
@@ -82,9 +93,11 @@ cp skill-publisher/.claude/commands/publish.md /path/to/your/project/.claude/com
 skill-publisher/
 ├── .claude/
 │   ├── skills/
-│   │   └── skill-publisher.md    # Skill 定义文件
+│   │   ├── skill-builder.md      # 构建器 Skill
+│   │   └── skill-publisher.md    # 发布器 Skill
 │   └── commands/
-│       └── publish.md            # /publish 斜杠命令
+│       ├── skill_builder.md      # /skill_builder 命令
+│       └── skill_publisher.md    # /skill_publisher 命令
 ├── install.sh                    # 一键安装脚本
 └── README.md
 ```
